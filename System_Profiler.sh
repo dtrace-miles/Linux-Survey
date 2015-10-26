@@ -8,7 +8,7 @@ OUTPUTFILE=~/System_Profile.xml
 echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>" >> $OUTPUTFILE
 echo "<System_Profile>" >> $OUTPUTFILE
 
-check_distro(){
+get_distro_name(){
     if [[ -e /etc/redhat-release ]]
     then
       DISTRO=$(cat /etc/redhat-release)
@@ -25,8 +25,29 @@ check_distro(){
     echo $DISTRO
     }
 
+get_processor_vendor(){
+	CPUVENDOR=$(grep vendor_id /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1' | uniq)
+	echo -e "<processor_vendor>"$CPUVENDOR"</processor_vendor>" >> $OUTPUTFILE
+	echo $CPUVENDOR
+}
 
+get_processor_arch(){
+	CPUARCH=$(lscpu | grep Architecture | awk -F ':' '{print $2}' | awk '$1=$1')
+	echo -e "<processor_architecture>"$CPUARCH"</processor_architecture>" >> $OUTPUTFILE
+	echo $CPUARCH
+}
 
+get_processor_max_freq_mhz(){
+	CPUMAXFREQ=$(lscpu | grep "CPU max" | awk -F ':' '{print $2}' | awk '$1=$1')
+	echo -e "<processor_max_frequency_mhz>"$CPUMAXFREQ"</processor_max_frequency_mhz>" >> $OUTPUTFILE
+	echo $CPUMAXFREQ
+}
+
+get_processor_min_freq_mhz(){
+	CPUMINFREQ=$(lscpu | grep "CPU min" | awk -F ':' '{print $2}' | awk '$1=$1')
+	echo -e "<processor_min_frequency_mhz>"$CPUMINFREQ"</processor_min_frequency_mhz>" >> $OUTPUTFILE
+	echo $CPUMINFREQ
+}
 check_ram_total(){
 	RAMTOTAL=$(grep MemTotal /proc/meminfo | awk -F ':' '{print $2}' | awk '$1=$1')
 	echo -e "<ram_total>"$RAMTOTAL"</ram_total>" >> $OUTPUTFILE
@@ -42,6 +63,7 @@ check_ram_free(){
 		echo -e "<ram_free>0 kB</ram_free>" >> $OUTPUTFILE
 		echo "No RAM free"
 	fi
+	echo $RAMFREE
 }
 
 check_swap_total(){
@@ -61,6 +83,7 @@ check_swap_free(){
 	if [[ -n $SWAPTOTAL ]]
 	then
 		echo -e "<swap_free>"$SWAPFREE"</swap_free>" >> $OUTPUTFILE
+		echo $SWAPFREE
 	else
 		echo -e "<swap_free>No swap active</swap_free>" >> $OUTPUTFILE
 		echo "No swap present/active"
@@ -69,12 +92,17 @@ check_swap_free(){
 
 #Gather distro info
 echo "<Distribution_Info>" >> $OUTPUTFILE
-check_distro
-
+get_distro_name
 echo "</Distribution_Info>" >> $OUTPUTFILE
 
 #Gather hardware info
 echo "<Hardware>" >> $OUTPUTFILE
+echo "<Processor>" >> $OUTPUTFILE
+get_processor_vendor
+get_processor_arch
+get_processor_max_freq_mhz
+get_processor_min_freq_mhz
+echo "</Processor>" >> $OUTPUTFILE
 #Gather memory info
 echo "<Memory>" >> $OUTPUTFILE
 check_ram_total
