@@ -58,11 +58,11 @@ check_swap_total(){
 
 check_swap_free(){
 	SWAPFREE=$(grep SwapFree /proc/meminfo | awk -F ':' '{print $2}' | awk '$1=$1')
-	if [[ $SWAPFREE ]]
+	if [[ -n $SWAPTOTAL ]]
 	then
 		echo -e "<swap_free>"$SWAPFREE"</swap_free>" >> $OUTPUTFILE
 	else
-		echo -e "<swap_free>0 kB</swap_free>" >> $OUTPUTFILE
+		echo -e "<swap_free>No swap active</swap_free>" >> $OUTPUTFILE
 		echo "No swap present/active"
 	fi
 }
