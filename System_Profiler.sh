@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# >> APPENDS TO END OF FILE
 # awk '/search_pattern/ { action_to_take_on_matches; another_action; }' file_to_parse
 #if  [[ -e checks if file exists
 
@@ -23,10 +22,16 @@ get_distro_name(){
     fi
     echo -e "<distro>"$DISTRO"</distro>" >> $OUTPUTFILE
     echo $DISTRO
-    }
+}
+
+generate_unique_id(){
+        SYSTEMID=$({ printf %s ''$DISTRO''; printf %s "$(grep "model name" /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1' | uniq)"; printf %s "$(whoami)"; } | shasum | cut -f1 -d' ')
+        echo -e "<system_id>"$SYSTEMID"</system_id>" >> $OUTPUTFILE
+        echo $SYSTEMID
+}
 
 get_processor_vendor(){
-	CPUVENDOR=$(grep vendor_id /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1' | uniq)
+        CPUVENDOR=$(grep vendor_id /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1' | uniq)
 	echo -e "<processor_vendor>"$CPUVENDOR"</processor_vendor>" >> $OUTPUTFILE
 	echo $CPUVENDOR
 }
@@ -35,6 +40,13 @@ get_processor_arch(){
 	CPUARCH=$(lscpu | grep Architecture | awk -F ':' '{print $2}' | awk '$1=$1')
 	echo -e "<processor_architecture>"$CPUARCH"</processor_architecture>" >> $OUTPUTFILE
 	echo $CPUARCH
+}
+
+get_processor_socket_count(){
+        SOCKETCOUNT=$(grep Socket /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1')
+}
+get_processor_core_count(){
+        CORECOUNT=$(grep Core /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1')
 }
 
 get_processor_max_freq_mhz(){
@@ -93,6 +105,7 @@ check_swap_free(){
 #Gather distro info
 echo "<Distribution_Info>" >> $OUTPUTFILE
 get_distro_name
+generate_unique_id
 echo "</Distribution_Info>" >> $OUTPUTFILE
 
 #Gather hardware info
@@ -100,6 +113,8 @@ echo "<Hardware>" >> $OUTPUTFILE
 echo "<Processor>" >> $OUTPUTFILE
 get_processor_vendor
 get_processor_arch
+get_processor_socket_count
+get_processor_core_count
 get_processor_max_freq_mhz
 get_processor_min_freq_mhz
 echo "</Processor>" >> $OUTPUTFILE
