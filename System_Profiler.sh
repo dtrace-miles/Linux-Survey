@@ -28,12 +28,18 @@ generate_unique_id(){
         SYSTEMID=$({ printf %s ''$DISTRO''; printf %s "$(grep "model name" /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1' | uniq)"; printf %s "$(whoami)"; } | shasum | cut -f1 -d' ')
         echo -e "<system_id>"$SYSTEMID"</system_id>" >> $OUTPUTFILE
         echo $SYSTEMID
-}
 
+}
 get_processor_vendor(){
         CPUVENDOR=$(grep vendor_id /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1' | uniq)
 	echo -e "<processor_vendor>"$CPUVENDOR"</processor_vendor>" >> $OUTPUTFILE
 	echo $CPUVENDOR
+}
+
+get_processor_name(){
+        CPUNAME=$(grep "model name" /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1' | uniq)
+        echo -e "<processor_name>"$CPUNAME"</processor_name>" >> $OUTPUTFILE
+        echo $CPUNAME
 }
 
 get_processor_arch(){
@@ -42,11 +48,10 @@ get_processor_arch(){
 	echo $CPUARCH
 }
 
-get_processor_socket_count(){
-        SOCKETCOUNT=$(grep Socket /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1')
-}
 get_processor_core_count(){
-        CORECOUNT=$(grep Core /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1')
+        CORECOUNT=$(grep "cpu cores" /proc/cpuinfo | awk -F ':' '{print $2}' | awk '$1=$1' | uniq)
+        echo -e "<processor_core_count>"$CORECOUNT"</processor_core_count>" >> $OUTPUTFILE
+        echo $CORECOUNT
 }
 
 get_processor_max_freq_mhz(){
@@ -112,8 +117,8 @@ echo "</Distribution_Info>" >> $OUTPUTFILE
 echo "<Hardware>" >> $OUTPUTFILE
 echo "<Processor>" >> $OUTPUTFILE
 get_processor_vendor
+get_processor_name
 get_processor_arch
-get_processor_socket_count
 get_processor_core_count
 get_processor_max_freq_mhz
 get_processor_min_freq_mhz
