@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # awk '/search_pattern/ { action_to_take_on_matches; another_action; }' file_to_parse
-#if  [[ -e checks if file exists
 
 OUTPUTFILE=~/System_Profile.xml
 echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>" >> $OUTPUTFILE
